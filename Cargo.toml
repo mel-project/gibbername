@@ -7,6 +7,8 @@ edition = "2021"
 anyhow = "1.0.69"
 futures-util = "0.3.26"
 gibbercode = "0.1.0"
-# melprot = { git = "https://github.com/themeliolabs/themelio-nodeprot", branch = "use-themelio-structs-0.3-beta" }
-melprot = { path = "../themelio-nodeprot/" }
+hex = "0.4.3"
+melprot = { git = "https://github.com/themeliolabs/themelio-nodeprot", branch = "use-themelio-structs-0.3-beta" }
+stdcode = "0.1.14"
 themelio-structs = "0.3.0-beta.6"
+tmelcrypt = "0.2.6"

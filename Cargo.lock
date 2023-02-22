@@ -893,8 +893,11 @@ dependencies = [
  "anyhow",
  "futures-util",
  "gibbercode",
+ "hex",
  "melprot",
+ "stdcode",
  "themelio-structs",
+ "tmelcrypt",
 ]
 
 [[package]]
@@ -1188,6 +1191,7 @@ dependencies = [
 [[package]]
 name = "melprot"
 version = "0.12.2"
+source = "git+https://github.com/themeliolabs/themelio-nodeprot?branch=use-themelio-structs-0.3-beta#7e3ef733843d6ef762e8fafe0ae380d63150ded2"
 dependencies = [
  "anyhow",
  "arrayref",

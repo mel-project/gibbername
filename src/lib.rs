@@ -1,5 +1,8 @@
+use std::str::FromStr;
+
 use futures_util::StreamExt;
-use themelio_structs::{BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash};
+use themelio_structs::{BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, Address, TxKind};
+use tmelcrypt::{Ed25519SK, HashVal};
 
 /// Decodes a gibbername into a blockchain location.
 fn decode_gibbername(gname: &str) -> anyhow::Result<(BlockHeight, u32)> {
@@ -90,6 +93,40 @@ pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Resul
     let last_coin = traverse_catena_chain(client, start_height, start_txhash).await?;
     let binding = String::from_utf8_lossy(&last_coin.additional_data);
     Ok(binding.into_owned())
+}
+
+fn register_name_cmd(address: Address, initial_binding: String) -> anyhow::Result<Transaction> {
+    let output = CoinData {
+        covhash: address,
+        value: CoinValue(1),
+        denom: Denom::NewCoin,
+        additional_data: initial_binding.into(),
+    };
+
+    let tx = Transaction{
+        kind: TxKind::Normal,
+        inputs: vec!(),
+        outputs: vec!(output),
+        fee: CoinValue(0),
+        covenants: vec!(),
+        data: "gibbername-v1".into(),
+        sigs: vec!(),
+    };
+
+    Ok(tx)
+}
+
+#[test]
+fn main() {
+    let sk = Ed25519SK::generate();
+    let address = Address(HashVal(sk.to_public().0));
+    let binding = String::from("henlo world");
+    let mut tx = register_name_cmd(address, binding).unwrap();
+    let sig = sk.sign(&tx.hash_nosigs().0);
+    tx.sigs = vec!(sig.into());
+    let tx_bytes = stdcode::serialize(&tx).unwrap();
+
+    println!("sk: {}, address: {}\ntx: {}", hex::encode(sk.0), address, hex::encode(tx_bytes));
 }
 
 // TODO: use something that's not "hehe"
