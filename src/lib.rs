@@ -86,7 +86,10 @@ async fn traverse_catena_chain(
 
 /// Returns the data bound to the given gibbername if there is any.
 pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Result<String> {
-    todo!()
+    let (start_height, start_txhash) = get_and_validate_start_tx(client, gibbername).await?;
+    let last_coin = traverse_catena_chain(client, start_height, start_txhash).await?;
+    let binding = String::from_utf8_lossy(&last_coin.additional_data);
+    Ok(binding.into_owned())
 }
 
 // TODO: use something that's not "hehe"
