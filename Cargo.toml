@@ -3,11 +3,14 @@ name = "gibbername"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 anyhow = "1.0.69"
 futures-util = "0.3.26"
 gibbercode = "0.1.0"
+<<<<<<< HEAD
 themelio-nodeprot = "0.12.2"
 themelio-structs = "0.2.11"
+=======
+melprot = { git = "https://github.com/themeliolabs/themelio-nodeprot", branch = "use-themelio-structs-0.3-beta" }
+themelio-structs = "0.3.0-beta.6"
+>>>>>>> 3df1bde (lookup progress)
