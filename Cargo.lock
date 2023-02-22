@@ -76,8 +76,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "async-compat"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -91,7 +89,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "async-executor"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -360,12 +357,9 @@ name = "bytes"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89b2fd2a0dcf38d7971e2194b6b6eebab45ae01067456a7fd93d5547a61b70be"
-<<<<<<< HEAD
-=======
 dependencies = [
  "serde",
 ]
->>>>>>> 3df1bde (lookup progress)
 
 [[package]]
 name = "cache-padded"
@@ -375,15 +369,9 @@ checksum = "c1db59621ec70f09c5e9b597b220c7a2b43611f4710dc03ceb8748637775692c"
 
 [[package]]
 name = "camino"
-<<<<<<< HEAD
-version = "1.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c77df041dc383319cc661b428b6961a005db4d6808d5e12536931b1ca9556055"
-=======
 version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6031a462f977dd38968b6f23378356512feeace69cef817e1a4475108093cec3"
->>>>>>> 3df1bde (lookup progress)
 dependencies = [
  "serde",
 ]
@@ -673,22 +661,6 @@ checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
 name = "env_logger"
-<<<<<<< HEAD
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a19187fea3ac7e84da7dacf48de0c45d63c6a76f9490dae389aead16c243fce3"
-dependencies = [
- "atty",
- "humantime",
- "log",
- "regex",
- "termcolor",
-]
-
-[[package]]
-name = "env_logger"
-=======
->>>>>>> 3df1bde (lookup progress)
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
@@ -756,8 +728,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed34cd105917e91daa4da6b3728c47b068749d6a62c59811f06ed2ac71d9da7"
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "futures-channel"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -767,7 +737,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "futures-core"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -924,11 +893,7 @@ dependencies = [
  "anyhow",
  "futures-util",
  "gibbercode",
-<<<<<<< HEAD
- "themelio-nodeprot",
-=======
  "melprot",
->>>>>>> 3df1bde (lookup progress)
  "themelio-structs",
 ]
 
@@ -990,8 +955,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "http"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1038,15 +1001,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4a1e36c821dbe04574f602848a19f742f4fb3c98d40449f11bcad18d6b17421"
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "hyper"
 version = "1.0.0-rc.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1068,7 +1028,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1198,47 +1157,10 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-name = "melnet"
-version = "0.2.27"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d98033648a18b1bb40d271a1b328d5f78f5a94e815c310b140ae94d35b88315"
-dependencies = [
- "anyhow",
- "async-net",
- "async-recursion",
- "async-trait",
- "concurrent-queue 1.2.4",
- "dashmap 4.0.2",
- "derivative",
- "env_logger 0.8.4",
- "fastrand",
- "futures-util",
- "lazy_static",
- "log",
- "once_cell",
- "parking_lot 0.11.2",
- "rand",
- "serde",
- "smol",
- "smol-timeout",
- "smolscale",
- "stdcode",
- "tap",
- "thiserror",
-]
-
-[[package]]
-name = "melnet2"
-version = "0.1.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ac1bd1c8ce9eac636c5624f41b8baf6448ee70012e8c41acce769f7feb7675d"
-=======
 name = "melnet2"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd0987ceb823ad44c566fa8ba677f6ca5075b8d6cfe5df3eca61082bcfecb557"
->>>>>>> 3df1bde (lookup progress)
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1251,10 +1173,7 @@ dependencies = [
  "lz4_flex",
  "moka",
  "nanorpc",
-<<<<<<< HEAD
-=======
  "nanorpc-http",
->>>>>>> 3df1bde (lookup progress)
  "pin-project",
  "reusable-box-future",
  "serde",
@@ -1267,8 +1186,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "melprot"
 version = "0.12.2"
 source = "git+https://github.com/themeliolabs/themelio-nodeprot?branch=use-themelio-structs-0.3-beta#7e3ef733843d6ef762e8fafe0ae380d63150ded2"
@@ -1301,7 +1218,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1309,9 +1225,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "memmap2"
-version = "0.5.9"
+version = "0.5.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2af2c65375e552a67fe3829ca63e8a7c27a378a62824594f43b2851d682b5ec2"
+checksum = "83faa42c0a078c393f6b29d5db232d8be22776a891f8f56e5284faee4a20b327"
 dependencies = [
  "libc",
 ]
@@ -1394,8 +1310,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "nanorpc-http"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1414,7 +1328,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "nom8"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1434,11 +1347,7 @@ dependencies = [
  "bitvec",
  "blake3",
  "dashmap 4.0.2",
-<<<<<<< HEAD
- "env_logger 0.9.3",
-=======
  "env_logger",
->>>>>>> 3df1bde (lookup progress)
  "ethnum",
  "genawaiter",
  "hex",
@@ -2392,54 +2301,12 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-name = "themelio-nodeprot"
-version = "0.12.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac2222c5585f023bbfd080adb54c4d76c913408f388160cfb600338ac355ba63"
-dependencies = [
- "anyhow",
- "arrayref",
- "async-recursion",
- "async-trait",
- "bytes",
- "derivative",
- "hex",
- "log",
- "lru",
- "melnet",
- "melnet2",
- "nanorpc",
- "novasmt",
- "once_cell",
- "parking_lot 0.12.1",
- "rustc-hash",
- "serde",
- "serde_json",
- "smol",
- "smol_str",
- "smolscale",
- "stdcode",
- "themelio-structs",
- "thiserror",
- "tmelcrypt",
-]
-
-[[package]]
-name = "themelio-structs"
-version = "0.2.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ad56391e72fa61cbee129e9f5d6f5019cbe22bc48a7d3c20658ae564c7f3f57"
-dependencies = [
- "arbitrary",
-=======
 name = "themelio-structs"
 version = "0.3.0-beta.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38797c3e9043f8e23190de567dfdd512573283cb8a6ec9e0d98f9e792a072f5a"
 dependencies = [
  "bytes",
->>>>>>> 3df1bde (lookup progress)
  "derivative",
  "derive_more",
  "hex",
@@ -2448,10 +2315,7 @@ dependencies = [
  "parse-display",
  "serde",
  "serde_repr",
-<<<<<<< HEAD
-=======
  "serde_with",
->>>>>>> 3df1bde (lookup progress)
  "stdcode",
  "tap",
  "thiserror",
@@ -2508,8 +2372,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "tokio"
 version = "1.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2521,7 +2383,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "toml_datetime"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2607,15 +2468,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1ee9bd9239c339d714d657fac840c6d2a4f9c45f4f9ec7b0975113458be78db"
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "try-lock"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "twox-hash"
 version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2691,8 +2549,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "want"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2703,7 +2559,6 @@ dependencies = [
 ]
 
 [[package]]
->>>>>>> 3df1bde (lookup progress)
 name = "wasi"
 version = "0.10.2+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
