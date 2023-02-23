@@ -142,12 +142,20 @@ pub async fn register(
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     // we use a Stream-based API
-    let stream = client.stream_transactions(current_height, address).boxed();
-    // while let Some(height, posn, transaction) = stream.next().await {
-    //     if transaction.data == b"gibbername-v1".into() {
-    //         return Ok(encode_gibbername(height, posn)?);
-    //     }
-    // }
+    let mut stream = client.stream_transactions(current_height, address).boxed();
+    while let Some(transaction) = stream.next().await {
+        if &transaction.data[..] == b"gibbername-v1" {
+            let gibbercoins: Vec<(usize, &CoinData)> = transaction
+                .outputs
+                .iter()
+                .enumerate()
+                .filter(|(_, coin)| coin.denom == Denom::NewCoin && coin.value.0 == 1)
+                .collect();
+            if gibbercoins.len() == 1 {
+                return Ok(encode_gibbername(current_height, gibbercoins[0].0 as u32)?)
+            }
+        }
+    }
     unreachable!()
 }
 
