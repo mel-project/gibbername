@@ -95,7 +95,20 @@ pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Resul
     Ok(binding.into_owned())
 }
 
-fn register_name_cmd(address: Address, initial_binding: String) -> anyhow::Result<Transaction> {
+fn register_name_uri(address: Address, initial_binding: &str) -> String {
+    // melwallet_uri::MwUriBuilder::new()
+    //     .output(0, CoinData {
+    //         denom: NewCoin::Denom,
+    //         value: 1.into(),
+    //         covhash: address,
+    //         additional_data: initial_binding.as_bytes().into(),
+    //     })
+    //     .data(b"gibbername-v1")
+    //     .build()
+    String::new()
+}
+
+fn register_name_tx(address: Address, initial_binding: String) -> anyhow::Result<Transaction> {
     let output = CoinData {
         covhash: address,
         value: CoinValue(1),
@@ -116,12 +129,28 @@ fn register_name_cmd(address: Address, initial_binding: String) -> anyhow::Resul
     Ok(tx)
 }
 
+pub async fn register(client: &melprot::Client, address: Address, initial_binding: &str) -> anyhow::Result<String> {
+    let current_height = client.latest_snapshot().await?.current_header().height;
+    let uri = register_name_uri(address, initial_binding);
+    println!("send with your wallet: {}", uri);
+
+    // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
+    // we use a Stream-based API
+    let stream = client.stream_transactions(current_height, address);
+    while let Some(transaction) = stream.next().await {
+        if transaction.data == b"gibbername-v1".into() {
+            return Ok(encode_gibbername(height, posn)?)
+        }
+    }
+    unreachable!()
+}
+
 #[test]
 fn main() {
     let sk = Ed25519SK::generate();
     let address = Address(HashVal(sk.to_public().0));
     let binding = String::from("henlo world");
-    let mut tx = register_name_cmd(address, binding).unwrap();
+    let mut tx = register_name_tx(address, binding).unwrap();
     let sig = sk.sign(&tx.hash_nosigs().0);
     tx.sigs = vec!(sig.into());
     let tx_bytes = stdcode::serialize(&tx).unwrap();
