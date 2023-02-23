@@ -136,14 +136,15 @@ pub async fn register(
     address: Address,
     initial_binding: &str,
 ) -> anyhow::Result<String> {
-    let current_height = client.latest_snapshot().await?.current_header().height;
+    let height = client.latest_snapshot().await?.current_header().height;
     let uri = register_name_uri(address, initial_binding);
     println!("send with your wallet: {}", uri);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     // we use a Stream-based API
-    let mut stream = client.stream_transactions(current_height, address).boxed();
+    let mut stream = client.stream_transactions(height, address).boxed();
     while let Some(transaction) = stream.next().await {
+        let current_height = client.latest_snapshot().await?.current_header().height;
         if &transaction.data[..] == b"gibbername-v1" {
             let gibbercoins: Vec<(usize, &CoinData)> = transaction
                 .outputs
