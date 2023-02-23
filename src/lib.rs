@@ -1,7 +1,9 @@
 use std::str::FromStr;
 
 use futures_util::StreamExt;
-use themelio_structs::{BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, Address, TxKind};
+use themelio_structs::{
+    Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, TxKind,
+};
 use tmelcrypt::{Ed25519SK, HashVal};
 
 /// Decodes a gibbername into a blockchain location.
@@ -28,7 +30,7 @@ async fn get_and_validate_start_tx(
     gibbername: &str,
 ) -> anyhow::Result<(BlockHeight, TxHash)> {
     let (height, index) = decode_gibbername(gibbername).expect("failed to decode {gibbername}");
-    let snapshot = client.older_snapshot(height).await?;
+    let snapshot = client.snapshot(height).await?;
     let txhash = snapshot.get_transaction_by_posn(index as usize).await?;
 
     // validate the transaction now
@@ -116,30 +118,34 @@ fn register_name_tx(address: Address, initial_binding: String) -> anyhow::Result
         additional_data: initial_binding.into(),
     };
 
-    let tx = Transaction{
+    let tx = Transaction {
         kind: TxKind::Normal,
-        inputs: vec!(),
-        outputs: vec!(output),
+        inputs: vec![],
+        outputs: vec![output],
         fee: CoinValue(0),
-        covenants: vec!(),
+        covenants: vec![],
         data: "gibbername-v1".into(),
-        sigs: vec!(),
+        sigs: vec![],
     };
 
     Ok(tx)
 }
 
-pub async fn register(client: &melprot::Client, address: Address, initial_binding: &str) -> anyhow::Result<String> {
+pub async fn register(
+    client: &melprot::Client,
+    address: Address,
+    initial_binding: &str,
+) -> anyhow::Result<String> {
     let current_height = client.latest_snapshot().await?.current_header().height;
     let uri = register_name_uri(address, initial_binding);
     println!("send with your wallet: {}", uri);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     // we use a Stream-based API
-    let stream = client.stream_transactions(current_height, address);
+    let stream = client.stream_transactions(current_height, address).boxed();
     while let Some(transaction) = stream.next().await {
         if transaction.data == b"gibbername-v1".into() {
-            return Ok(encode_gibbername(height, posn)?)
+            return Ok(encode_gibbername(height, posn)?);
         }
     }
     unreachable!()
@@ -152,10 +158,15 @@ fn main() {
     let binding = String::from("henlo world");
     let mut tx = register_name_tx(address, binding).unwrap();
     let sig = sk.sign(&tx.hash_nosigs().0);
-    tx.sigs = vec!(sig.into());
+    tx.sigs = vec![sig.into()];
     let tx_bytes = stdcode::serialize(&tx).unwrap();
 
-    println!("sk: {}, address: {}\ntx: {}", hex::encode(sk.0), address, hex::encode(tx_bytes));
+    println!(
+        "sk: {}, address: {}\ntx: {}",
+        hex::encode(sk.0),
+        address,
+        hex::encode(tx_bytes)
+    );
 }
 
 // TODO: use something that's not "hehe"

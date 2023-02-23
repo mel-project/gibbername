@@ -1191,7 +1191,6 @@ dependencies = [
 [[package]]
 name = "melprot"
 version = "0.12.2"
-source = "git+https://github.com/themeliolabs/themelio-nodeprot?branch=use-themelio-structs-0.3-beta#8c4b4b2447f63d43b95f879a367b0cf9d467fca3"
 dependencies = [
  "anyhow",
  "arrayref",
