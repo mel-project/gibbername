@@ -143,11 +143,11 @@ pub async fn register(
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     // we use a Stream-based API
     let stream = client.stream_transactions(current_height, address).boxed();
-    while let Some(transaction) = stream.next().await {
-        if transaction.data == b"gibbername-v1".into() {
-            return Ok(encode_gibbername(height, posn)?);
-        }
-    }
+    // while let Some(height, posn, transaction) = stream.next().await {
+    //     if transaction.data == b"gibbername-v1".into() {
+    //         return Ok(encode_gibbername(height, posn)?);
+    //     }
+    // }
     unreachable!()
 }
 
