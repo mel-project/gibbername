@@ -143,20 +143,20 @@ pub async fn register(
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     let mut stream = client.stream_transactions_from(height, address).boxed();
     while let Some((transaction, height)) = stream.next().await {
-        let txhash = transaction.hash_nosigs();
-        let (posn, _) = client
-            .snapshot(height)
-            .await?
-            .current_block()
-            .await?
-            .abbreviate()
-            .txhashes
-            .iter()
-            .enumerate()
-            .find(|(_, hash)| **hash == txhash)
-            .expect("No transaction with matching hash in this block.");
-
         if &transaction.data[..] == b"gibbername-v1" {
+            let txhash = transaction.hash_nosigs();
+            let (posn, _) = client
+                .snapshot(height)
+                .await?
+                .current_block()
+                .await?
+                .abbreviate()
+                .txhashes
+                .iter()
+                .enumerate()
+                .find(|(_, hash)| **hash == txhash)
+                .expect("No transaction with matching hash in this block.");
+
                 return Ok(encode_gibbername(height, posn as u32)?)
         }
     }
