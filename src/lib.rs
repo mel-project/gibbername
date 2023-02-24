@@ -141,20 +141,23 @@ pub async fn register(
     println!("send with your wallet: {}", uri);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
-    // we use a Stream-based API
-    let mut stream = client.stream_transactions(height, address).boxed();
-    while let Some(transaction) = stream.next().await {
-        let current_height = client.latest_snapshot().await?.current_header().height;
+    let mut stream = client.stream_transactions_from(height, address).boxed();
+    while let Some((transaction, height)) = stream.next().await {
+        let txhash = transaction.hash_nosigs();
+        let (posn, _) = client
+            .snapshot(height)
+            .await?
+            .current_block()
+            .await?
+            .abbreviate()
+            .txhashes
+            .iter()
+            .enumerate()
+            .find(|(_, hash)| **hash == txhash)
+            .expect("No transaction with matching hash in this block.");
+
         if &transaction.data[..] == b"gibbername-v1" {
-            let gibbercoins: Vec<(usize, &CoinData)> = transaction
-                .outputs
-                .iter()
-                .enumerate()
-                .filter(|(_, coin)| coin.denom == Denom::NewCoin && coin.value.0 == 1)
-                .collect();
-            if gibbercoins.len() == 1 {
-                return Ok(encode_gibbername(current_height, gibbercoins[0].0 as u32)?)
-            }
+                return Ok(encode_gibbername(height, posn as u32)?)
         }
     }
     unreachable!()
