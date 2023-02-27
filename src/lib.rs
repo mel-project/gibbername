@@ -137,7 +137,7 @@ pub async fn register(
     println!("send with your wallet: {}", uri);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
-    let mut stream = client.stream_transactions(height, address).boxed();
+    let mut stream = client.stream_transactions_from(height, address).boxed();
     while let Some((transaction, height)) = stream.next().await {
         if &transaction.data[..] == b"gibbername-v1" {
             let txhash = transaction.hash_nosigs();
