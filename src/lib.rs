@@ -1,9 +1,5 @@
-use std::str::FromStr;
-
 use futures_util::StreamExt;
-use themelio_structs::{
-    Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, TxKind,
-};
+use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, TxKind};
 use tmelcrypt::{Ed25519SK, HashVal};
 
 /// Decodes a gibbername into a blockchain location.
@@ -48,7 +44,7 @@ async fn get_and_validate_start_tx(
         let new_outputs = tx
             .outputs
             .iter()
-            .filter(|output| output.denom == Denom::NewCoin)
+            .filter(|output| output.denom == Denom::NewCustom)
             .collect::<Vec<&CoinData>>();
         if new_outputs.len() == 1 && new_outputs[0].value == CoinValue(1) {
             Ok((height, tx.hash_nosigs()))
@@ -69,7 +65,7 @@ async fn traverse_catena_chain(
     let traversal = client
         .traverse_fwd(start_height, start_txhash, move |tx: &Transaction| {
             tx.outputs.iter().position(|coin_data| {
-                (tx.hash_nosigs() == start_txhash && coin_data.denom == Denom::NewCoin)
+                (tx.hash_nosigs() == start_txhash && coin_data.denom == Denom::NewCustom)
                     || coin_data.denom == Denom::Custom(start_txhash)
             })
         })
@@ -114,7 +110,7 @@ fn register_name_tx(address: Address, initial_binding: String) -> anyhow::Result
     let output = CoinData {
         covhash: address,
         value: CoinValue(1),
-        denom: Denom::NewCoin,
+        denom: Denom::NewCustom,
         additional_data: initial_binding.into(),
     };
 
@@ -141,7 +137,7 @@ pub async fn register(
     println!("send with your wallet: {}", uri);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
-    let mut stream = client.stream_transactions_from(height, address).boxed();
+    let mut stream = client.stream_transactions(height, address).boxed();
     while let Some((transaction, height)) = stream.next().await {
         if &transaction.data[..] == b"gibbername-v1" {
             let txhash = transaction.hash_nosigs();
@@ -157,7 +153,7 @@ pub async fn register(
                 .find(|(_, hash)| **hash == txhash)
                 .expect("No transaction with matching hash in this block.");
 
-                return Ok(encode_gibbername(height, posn as u32)?)
+            return Ok(encode_gibbername(height, posn as u32)?);
         }
     }
     unreachable!()

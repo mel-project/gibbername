@@ -895,6 +895,7 @@ dependencies = [
  "gibbercode",
  "hex",
  "melprot",
+ "melstructs",
  "stdcode",
  "themelio-structs",
  "tmelcrypt",
@@ -1190,8 +1191,9 @@ dependencies = [
 
 [[package]]
 name = "melprot"
-version = "0.12.2"
-source = "git+https://github.com/themeliolabs/themelio-nodeprot?branch=use-themelio-structs-0.3-beta#74bfe1ed57e4faaf1f7ea6c4294a1808fbba370c"
+version = "0.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86c32ac173122ad0dd1e046c1c08c4c3fb593ef6d532f412eb69995f16ba37de"
 dependencies = [
  "anyhow",
  "arrayref",
@@ -1204,6 +1206,7 @@ dependencies = [
  "log",
  "lru",
  "melnet2",
+ "melstructs",
  "nanorpc",
  "novasmt",
  "once_cell",
@@ -1215,7 +1218,28 @@ dependencies = [
  "smol_str",
  "smolscale",
  "stdcode",
- "themelio-structs",
+ "thiserror",
+ "tmelcrypt",
+]
+
+[[package]]
+name = "melstructs"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0daeea135fc23ad021124895bd92069b3f8cec13f45cb14b60e3387ea079f877"
+dependencies = [
+ "bytes",
+ "derivative",
+ "derive_more",
+ "hex",
+ "num",
+ "num_enum",
+ "parse-display",
+ "serde",
+ "serde_repr",
+ "serde_with",
+ "stdcode",
+ "tap",
  "thiserror",
  "tmelcrypt",
 ]
