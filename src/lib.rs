@@ -1,6 +1,5 @@
 use futures_util::StreamExt;
-use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, TxKind};
-use tmelcrypt::{Ed25519SK, HashVal};
+use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, NetID};
 
 /// Decodes a gibbername into a blockchain location.
 fn decode_gibbername(gname: &str) -> anyhow::Result<(BlockHeight, u32)> {
@@ -106,25 +105,18 @@ fn register_name_uri(address: Address, initial_binding: &str) -> String {
     String::new()
 }
 
-fn register_name_tx(address: Address, initial_binding: String) -> anyhow::Result<Transaction> {
-    let output = CoinData {
-        covhash: address,
-        value: CoinValue(1),
-        denom: Denom::NewCustom,
-        additional_data: initial_binding.into(),
-    };
+fn register_name_cmd(address: Address, initial_binding: String) -> anyhow::Result<String> {
 
-    let tx = Transaction {
-        kind: TxKind::Normal,
-        inputs: vec![],
-        outputs: vec![output],
-        fee: CoinValue(0),
-        covenants: vec![],
-        data: "gibbername-v1".into(),
-        sigs: vec![],
-    };
+    let cmd = format!(
+        "melwallet-cli send --to {},{},{},\"{}\" --hex-data {}",
+        address,
+        1,
+        "\"(NewCustom)\"",
+        initial_binding,
+        hex::encode(&"gibbername-v1")
+    );
 
-    Ok(tx)
+    Ok(cmd)
 }
 
 pub async fn register(
@@ -160,21 +152,24 @@ pub async fn register(
 }
 
 #[test]
-fn main() {
-    let sk = Ed25519SK::generate();
-    let address = Address(HashVal(sk.to_public().0));
-    let binding = String::from("henlo world");
-    let mut tx = register_name_tx(address, binding).unwrap();
-    let sig = sk.sign(&tx.hash_nosigs().0);
-    tx.sigs = vec![sig.into()];
-    let tx_bytes = stdcode::serialize(&tx).unwrap();
+fn main() -> anyhow::Result<()> {
+    smolscale::block_on(async {
+        let gibbername = "tesgeg";
+        // let client = melprot::Client::autoconnect(NetID::Testnet).await.unwrap();
+        let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
+        let client = melprot::Client::connect_http(NetID::Testnet, addr).await.unwrap();
+        client.trust(melbootstrap::checkpoint_height(NetID::Testnet).unwrap());
 
-    println!(
-        "sk: {}, address: {}\ntx: {}",
-        hex::encode(sk.0),
-        address,
-        hex::encode(tx_bytes)
-    );
+        // let result = lookup(&client, gibbername).await.unwrap();
+
+        let (start_height, start_txhash) = get_and_validate_start_tx(&client, gibbername).await.unwrap();
+        let last_coin = traverse_catena_chain(&client, start_height, start_txhash).await.unwrap();
+        // let binding = String::from_utf8_lossy(&last_coin.additional_data);
+
+        println!("result: {:?}", last_coin);
+    });
+
+    Ok(())
 }
 
 // TODO: use something that's not "hehe"

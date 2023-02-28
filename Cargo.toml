@@ -11,5 +11,8 @@ hex = "0.4.3"
 melprot = "0.13.3"
 melstructs = "0.3.2"
 stdcode = "0.1.14"
-themelio-structs = "0.3.0-beta.6"
 tmelcrypt = "0.2.6"
+
+[dev-dependencies]
+smolscale = "0.3.52"
+melbootstrap = "0.8.3"
