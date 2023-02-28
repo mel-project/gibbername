@@ -1240,6 +1240,8 @@ dependencies = [
 [[package]]
 name = "melprot"
 version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1feadb60cf788015ba2f17a9501c55f702ba039d768f68f792f474e8fede6d3"
 dependencies = [
  "anyhow",
  "arrayref",
@@ -1251,7 +1253,6 @@ dependencies = [
  "hex",
  "log",
  "lru",
- "melbootstrap",
  "melnet2",
  "melstructs",
  "nanorpc",
