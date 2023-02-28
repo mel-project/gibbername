@@ -1,3 +1,4 @@
+use anyhow::Context;
 use futures_util::StreamExt;
 use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, NetID};
 
@@ -71,6 +72,23 @@ async fn traverse_catena_chain(
         .expect("failed to traverse forward")
         .collect::<Vec<Transaction>>()
         .await;
+
+    if traversal.len() == 0 {
+        let snap = client.snapshot(start_height).await?;
+        let tx = snap
+            .get_transaction(start_txhash)
+            .await?
+            .context("No transaction with given hash")?;
+        let coin = tx
+            .outputs
+            .iter()
+            .find(|coin| coin.denom == Denom::NewCustom);
+
+        match coin {
+            Some(coin_data) => return Ok(coin_data.clone()),
+            None => anyhow::bail!("No valid gibbercoins found")
+        }
+    }
 
     let last_tx = traversal.last().expect("the traversal is empty");
     if let Some(last_tx_coin) = last_tx
@@ -155,18 +173,21 @@ pub async fn register(
 fn main() -> anyhow::Result<()> {
     smolscale::block_on(async {
         let gibbername = "tesgeg";
+        println!("{}", decode_gibbername(gibbername).unwrap().0);
         // let client = melprot::Client::autoconnect(NetID::Testnet).await.unwrap();
         let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
         let client = melprot::Client::connect_http(NetID::Testnet, addr).await.unwrap();
         client.trust(melbootstrap::checkpoint_height(NetID::Testnet).unwrap());
 
-        // let result = lookup(&client, gibbername).await.unwrap();
+        let result = lookup(&client, gibbername).await.unwrap();
 
-        let (start_height, start_txhash) = get_and_validate_start_tx(&client, gibbername).await.unwrap();
-        let last_coin = traverse_catena_chain(&client, start_height, start_txhash).await.unwrap();
-        // let binding = String::from_utf8_lossy(&last_coin.additional_data);
+        // let (start_height, start_txhash) = get_and_validate_start_tx(&client, gibbername).await.unwrap();
+        // println!("result1: {:?} {}", start_height, start_txhash);
 
-        println!("result: {:?}", last_coin);
+        // let last_coin = traverse_catena_chain(&client, start_height, start_txhash).await.unwrap();
+        // // let binding = String::from_utf8_lossy(&last_coin.additional_data);
+
+        println!("result: {:?}", result);
     });
 
     Ok(())

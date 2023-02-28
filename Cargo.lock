@@ -451,9 +451,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.6"
+version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2dd04ddaf88237dc3b8d8f9a3c1004b506b54b3313403944054d23c0870c521"
+checksum = "cf2b3e8478797446514c91ef04bafcb59faba183e621ad488df88983cc14128c"
 dependencies = [
  "cfg-if",
  "crossbeam-utils",
@@ -1240,8 +1240,6 @@ dependencies = [
 [[package]]
 name = "melprot"
 version = "0.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1feadb60cf788015ba2f17a9501c55f702ba039d768f68f792f474e8fede6d3"
 dependencies = [
  "anyhow",
  "arrayref",
@@ -1253,6 +1251,7 @@ dependencies = [
  "hex",
  "log",
  "lru",
+ "melbootstrap",
  "melnet2",
  "melstructs",
  "nanorpc",
