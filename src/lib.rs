@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Context;
 use futures_util::StreamExt;
 use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, NetID};
@@ -107,6 +109,7 @@ pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Resul
     let (start_height, start_txhash) = get_and_validate_start_tx(client, gibbername).await?;
     let last_coin = traverse_catena_chain(client, start_height, start_txhash).await?;
     let binding = String::from_utf8_lossy(&last_coin.additional_data);
+
     Ok(binding.into_owned())
 }
 
@@ -120,17 +123,17 @@ fn register_name_uri(address: Address, initial_binding: &str) -> String {
     //     })
     //     .data(b"gibbername-v1")
     //     .build()
-    String::new()
+    todo!()
 }
 
-fn register_name_cmd(address: Address, initial_binding: String) -> anyhow::Result<String> {
-
+fn register_name_cmd(wallet_name: &str, address: Address, initial_binding: &str) -> anyhow::Result<String> {
     let cmd = format!(
-        "melwallet-cli send --to {},{},{},\"{}\" --hex-data {}",
+        "melwallet-cli send -w {} --to {},{},{},\"{}\" --hex-data {}",
+        wallet_name,
         address,
-        1,
-        "\"(NewCustom)\"",
-        initial_binding,
+        0.000001,
+        "\"(NEWCUSTOM)\"",
+        hex::encode(initial_binding),
         hex::encode(&"gibbername-v1")
     );
 
@@ -143,8 +146,9 @@ pub async fn register(
     initial_binding: &str,
 ) -> anyhow::Result<String> {
     let height = client.latest_snapshot().await?.current_header().height;
-    let uri = register_name_uri(address, initial_binding);
-    println!("send with your wallet: {}", uri);
+    let wallet_name = "last";
+    let cmd = register_name_cmd(wallet_name, address, initial_binding)?;
+    println!("Send this command with your wallet: {}", cmd);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     let mut stream = client.stream_transactions_from(height, address).boxed();
@@ -169,25 +173,58 @@ pub async fn register(
     unreachable!()
 }
 
+async fn transfer_name_cmd(client: &melprot::Client, gibbername: &str, wallet_name: &str, address: Address, new_binding: &str) -> anyhow::Result<()> {
+    let current_height = client.latest_snapshot().await?.current_header().height;
+    let (height, index) = decode_gibbername(gibbername)?;
+
+    let snap = client.snapshot(height).await?;
+    let txhash = snap
+        .get_transaction_by_posn(index as usize)
+        .await?
+        .context("Couldn't find tx for given gibbername")?;
+    let denom = Denom::Custom(txhash);
+
+    let cmd = format!(
+        "melwallet-cli send -w {} --to {},{},{},{}",
+        wallet_name,
+        address,
+        0.000001,
+        denom,
+        hex::encode(new_binding),
+    );
+
+    println!("Send this command with your wallet: {}", cmd);
+
+    // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
+    let mut stream = client.stream_transactions_from(current_height, address).boxed();
+    while let Some((transaction, _height)) = stream.next().await {
+        if let Some(_coin) = &transaction.outputs.iter().find(|coin| coin.denom == denom) {
+            println!("Gibbername {} transferred to {} with new binding {}", gibbername, address, new_binding);
+            return Ok(());
+        }
+    }
+    unreachable!()
+}
+
 #[test]
 fn main() -> anyhow::Result<()> {
     smolscale::block_on(async {
-        let gibbername = "tesgeg";
-        println!("{}", decode_gibbername(gibbername).unwrap().0);
-        // let client = melprot::Client::autoconnect(NetID::Testnet).await.unwrap();
         let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
         let client = melprot::Client::connect_http(NetID::Testnet, addr).await.unwrap();
         client.trust(melbootstrap::checkpoint_height(NetID::Testnet).unwrap());
+        let address = Address::from_str("t1cj51xmq3dxn91z8exz3vhbk2wc8g9enh3kzsbmd3zzy6yx1memyg").unwrap();
+        let initial_binding = "henlo world lmao";
+        let wallet_name = "last";
 
-        let result = lookup(&client, gibbername).await.unwrap();
+        let gibbername = register(&client, address, initial_binding).await.unwrap();
+        let binding = lookup(&client, &gibbername).await.unwrap();
+        println!("INITIAL BINDING: {}", binding);
 
-        // let (start_height, start_txhash) = get_and_validate_start_tx(&client, gibbername).await.unwrap();
-        // println!("result1: {:?} {}", start_height, start_txhash);
+        let new_binding = "it is wednesday my dudes";
+        transfer_name_cmd(&client, &gibbername, wallet_name, address, new_binding).await.unwrap();
 
-        // let last_coin = traverse_catena_chain(&client, start_height, start_txhash).await.unwrap();
-        // // let binding = String::from_utf8_lossy(&last_coin.additional_data);
-
-        println!("result: {:?}", result);
+        let final_lookup = lookup(&client, &gibbername).await.unwrap();
+        println!("FINAL LOOKUP: {}", final_lookup);
     });
 
     Ok(())
