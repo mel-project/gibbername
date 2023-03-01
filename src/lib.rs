@@ -1,8 +1,6 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use futures_util::StreamExt;
-use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash, NetID};
+use melstructs::{Address, BlockHeight, CoinData, CoinValue, Denom, Transaction, TxHash};
 
 /// Decodes a gibbername into a blockchain location.
 fn decode_gibbername(gname: &str) -> anyhow::Result<(BlockHeight, u32)> {
@@ -75,7 +73,7 @@ async fn traverse_catena_chain(
         .collect::<Vec<Transaction>>()
         .await;
 
-    if traversal.len() == 0 {
+    if traversal.is_empty() {
         let snap = client.snapshot(start_height).await?;
         let tx = snap
             .get_transaction(start_txhash)
@@ -88,7 +86,7 @@ async fn traverse_catena_chain(
 
         match coin {
             Some(coin_data) => return Ok(coin_data.clone()),
-            None => anyhow::bail!("No valid gibbercoins found")
+            None => anyhow::bail!("No valid gibbercoins found"),
         }
     }
 
@@ -113,6 +111,7 @@ pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Resul
     Ok(binding.into_owned())
 }
 
+#[allow(unused)]
 fn register_name_uri(address: Address, initial_binding: &str) -> String {
     // melwallet_uri::MwUriBuilder::new()
     //     .output(0, CoinData {
@@ -126,7 +125,11 @@ fn register_name_uri(address: Address, initial_binding: &str) -> String {
     todo!()
 }
 
-fn register_name_cmd(wallet_name: &str, address: Address, initial_binding: &str) -> anyhow::Result<String> {
+fn register_name_cmd(
+    wallet_name: &str,
+    address: Address,
+    initial_binding: &str,
+) -> anyhow::Result<String> {
     let cmd = format!(
         "melwallet-cli send -w {} --to {},{},{},\"{}\" --hex-data {}",
         wallet_name,
@@ -134,7 +137,7 @@ fn register_name_cmd(wallet_name: &str, address: Address, initial_binding: &str)
         0.000001,
         "\"(NEWCUSTOM)\"",
         hex::encode(initial_binding),
-        hex::encode(&"gibbername-v1")
+        hex::encode("gibbername-v1")
     );
 
     Ok(cmd)
@@ -167,13 +170,20 @@ pub async fn register(
                 .find(|(_, hash)| **hash == txhash)
                 .expect("No transaction with matching hash in this block.");
 
-            return Ok(encode_gibbername(height, posn as u32)?);
+            let gibbername = encode_gibbername(height, posn as u32)?;
+            return Ok(gibbername);
         }
     }
     unreachable!()
 }
 
-async fn transfer_name_cmd(client: &melprot::Client, gibbername: &str, wallet_name: &str, address: Address, new_binding: &str) -> anyhow::Result<()> {
+pub async fn transfer_name_cmd(
+    client: &melprot::Client,
+    gibbername: &str,
+    wallet_name: &str,
+    address: Address,
+    new_binding: &str,
+) -> anyhow::Result<()> {
     let current_height = client.latest_snapshot().await?.current_header().height;
     let (height, index) = decode_gibbername(gibbername)?;
 
@@ -196,55 +206,73 @@ async fn transfer_name_cmd(client: &melprot::Client, gibbername: &str, wallet_na
     println!("Send this command with your wallet: {}", cmd);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
-    let mut stream = client.stream_transactions_from(current_height, address).boxed();
+    let mut stream = client
+        .stream_transactions_from(current_height, address)
+        .boxed();
     while let Some((transaction, _height)) = stream.next().await {
         if let Some(_coin) = &transaction.outputs.iter().find(|coin| coin.denom == denom) {
-            println!("Gibbername {} transferred to {} with new binding {}", gibbername, address, new_binding);
+            println!(
+                "Gibbername {} transferred to {} with new binding {}",
+                gibbername, address, new_binding
+            );
             return Ok(());
         }
     }
     unreachable!()
 }
 
-#[test]
-fn end2end() -> anyhow::Result<()> {
-    smolscale::block_on(async {
-        let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
-        let client = melprot::Client::connect_http(NetID::Testnet, addr).await.unwrap();
-        client.trust(melbootstrap::checkpoint_height(NetID::Testnet).unwrap());
-        let address = Address::from_str("t1cj51xmq3dxn91z8exz3vhbk2wc8g9enh3kzsbmd3zzy6yx1memyg").unwrap();
-        let initial_binding = "henlo world lmao";
-        let wallet_name = "last";
+#[cfg(test)]
+mod test {
+    use super::*;
+    use melstructs::NetID;
+    use std::str::FromStr;
 
-        let gibbername = register(&client, address, initial_binding).await.unwrap();
-        let binding = lookup(&client, &gibbername).await.unwrap();
-        println!("INITIAL BINDING: {}", binding);
+    #[test]
+    fn end2end() -> anyhow::Result<()> {
+        smolscale::block_on(async {
+            let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
+            let client = melprot::Client::connect_http(NetID::Testnet, addr)
+                .await
+                .unwrap();
+            client.trust(melbootstrap::checkpoint_height(NetID::Testnet).unwrap());
+            let address =
+                Address::from_str("t1cj51xmq3dxn91z8exz3vhbk2wc8g9enh3kzsbmd3zzy6yx1memyg")
+                    .unwrap();
+            let initial_binding = "henlo world lmao";
+            let wallet_name = "last";
 
-        let new_binding = "it is wednesday my dudes";
-        transfer_name_cmd(&client, &gibbername, wallet_name, address, new_binding).await.unwrap();
+            let gibbername = register(&client, address, initial_binding).await.unwrap();
+            let binding = lookup(&client, &gibbername).await.unwrap();
+            println!("INITIAL BINDING: {}", binding);
 
-        let final_lookup = lookup(&client, &gibbername).await.unwrap();
-        println!("FINAL LOOKUP: {}", final_lookup);
-    });
+            let new_binding = "it is wednesday my dudes";
+            transfer_name_cmd(&client, &gibbername, wallet_name, address, new_binding)
+                .await
+                .unwrap();
 
-    Ok(())
-}
+            let final_lookup = lookup(&client, &gibbername).await.unwrap();
+            println!("FINAL LOOKUP: {}", final_lookup);
+        });
 
-// TODO: use something that's not "hehe"
-#[test]
-fn encodes_gibbername() {
-    let height = BlockHeight(216);
-    let index = 2;
-    let gname = encode_gibbername(height, index);
+        Ok(())
+    }
 
-    assert_eq!(gname.unwrap(), "lol".to_string());
-}
+    // TODO: use something that's not "hehe"
+    #[test]
+    fn encodes_gibbername() {
+        let height = BlockHeight(216);
+        let index = 2;
+        let gname = encode_gibbername(height, index);
 
-#[test]
-fn decodes_gibbername() {
-    let gname = "hehe-lol";
-    let (height, index) = gibbercode::decode(gname);
+        assert_eq!(gname.unwrap(), "lol".to_string());
+    }
 
-    assert_eq!(height, 216);
-    assert_eq!(index, 2);
+    #[test]
+    fn decodes_gibbername() {
+        let gname = "hehe-lol";
+        let (height, index) = gibbercode::decode(gname);
+
+        assert_eq!(height, 216);
+        assert_eq!(index, 2);
+    }
 }
