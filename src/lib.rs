@@ -147,9 +147,9 @@ pub async fn register(
     client: &melprot::Client,
     address: Address,
     initial_binding: &str,
+    wallet_name: &str
 ) -> anyhow::Result<String> {
     let height = client.latest_snapshot().await?.current_header().height;
-    let wallet_name = "last";
     let cmd = register_name_cmd(wallet_name, address, initial_binding)?;
     println!("Send this command with your wallet: {}", cmd);
 
@@ -241,7 +241,7 @@ mod test {
             let initial_binding = "henlo world lmao";
             let wallet_name = "last";
 
-            let gibbername = register(&client, address, initial_binding).await.unwrap();
+            let gibbername = register(&client, address, initial_binding, wallet_name).await.unwrap();
             let binding = lookup(&client, &gibbername).await.unwrap();
             println!("INITIAL BINDING: {}", binding);
 
