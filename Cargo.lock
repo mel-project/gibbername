@@ -1240,6 +1240,7 @@ dependencies = [
 [[package]]
 name = "melprot"
 version = "0.13.3"
+source = "git+https://github.com/mel-project/melprot#25d94b5c6961c77276c21d6a71f028789f15b9e9"
 dependencies = [
  "anyhow",
  "arrayref",

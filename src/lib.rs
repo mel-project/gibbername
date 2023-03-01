@@ -207,7 +207,7 @@ async fn transfer_name_cmd(client: &melprot::Client, gibbername: &str, wallet_na
 }
 
 #[test]
-fn main() -> anyhow::Result<()> {
+fn end2end() -> anyhow::Result<()> {
     smolscale::block_on(async {
         let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
         let client = melprot::Client::connect_http(NetID::Testnet, addr).await.unwrap();
