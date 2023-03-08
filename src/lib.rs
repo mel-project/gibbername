@@ -64,6 +64,7 @@ async fn traverse_catena_chain(
 ) -> anyhow::Result<CoinData> {
     let traversal = client
         .traverse_fwd(start_height, start_txhash, move |tx: &Transaction| {
+            log::debug!("traversing {:?}", tx);
             tx.outputs.iter().position(|coin_data| {
                 (tx.hash_nosigs() == start_txhash && coin_data.denom == Denom::NewCustom)
                     || coin_data.denom == Denom::Custom(start_txhash)
@@ -105,6 +106,7 @@ async fn traverse_catena_chain(
 /// Returns the data bound to the given gibbername if there is any.
 pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Result<String> {
     let (start_height, start_txhash) = get_and_validate_start_tx(client, gibbername).await?;
+    log::debug!("start_height: {start_height}, start_txhash: {start_txhash}");
     let last_coin = traverse_catena_chain(client, start_height, start_txhash).await?;
     let binding = String::from_utf8_lossy(&last_coin.additional_data);
 
@@ -147,7 +149,7 @@ pub async fn register(
     client: &melprot::Client,
     address: Address,
     initial_binding: &str,
-    wallet_name: &str
+    wallet_name: &str,
 ) -> anyhow::Result<String> {
     let height = client.latest_snapshot().await?.current_header().height;
     let cmd = register_name_cmd(wallet_name, address, initial_binding)?;
@@ -229,19 +231,20 @@ mod test {
 
     #[test]
     fn end2end() -> anyhow::Result<()> {
+        let _ = env_logger::try_init();
         smolscale::block_on(async {
-            let addr: std::net::SocketAddr = "127.0.0.1:5000".parse().unwrap();
-            let client = melprot::Client::connect_http(NetID::Testnet, addr)
-                .await
-                .unwrap();
-            client.trust(melbootstrap::checkpoint_height(NetID::Testnet).unwrap());
+            let client = melprot::Client::autoconnect(NetID::Testnet).await.unwrap();
             let address =
                 Address::from_str("t1cj51xmq3dxn91z8exz3vhbk2wc8g9enh3kzsbmd3zzy6yx1memyg")
                     .unwrap();
             let initial_binding = "henlo world lmao";
             let wallet_name = "last";
 
-            let gibbername = register(&client, address, initial_binding, wallet_name).await.unwrap();
+            let gibbername = register(&client, address, initial_binding, wallet_name)
+                .await
+                .unwrap();
+
+            println!("gibbername: {gibbername}");
             let binding = lookup(&client, &gibbername).await.unwrap();
             println!("INITIAL BINDING: {}", binding);
 

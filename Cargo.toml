@@ -5,15 +5,20 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
+env_logger = "0.10.0"
+
 futures-util = "0.3.26"
 gibbercode = "0.1.0"
 hex = "0.4.3"
-melprot = "0.13.3"
+log = "0.4.17"
+# melprot = "0.13.4"
+melprot={path="../melprot"}
 # melprot = { git = "https://github.com/mel-project/melprot" }
 melstructs = "0.3.2"
 stdcode = "0.1.14"
-tmelcrypt = "0.2.6"
+tmelcrypt = "0.2.7"
 
 [dev-dependencies]
 smolscale = "0.3.52"
 melbootstrap = "0.8.3"
+env_logger = "0.10.0"
