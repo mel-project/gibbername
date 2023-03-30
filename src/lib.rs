@@ -103,6 +103,61 @@ async fn traverse_catena_chain(
     }
 }
 
+/// Traverses the Catena chain to get the coin containing all the historical bindings.
+async fn traverse_catena_chain_whole_history(
+    client: &melprot::Client,
+    start_height: BlockHeight,
+    start_txhash: TxHash,
+) -> anyhow::Result<Vec<CoinData>> {
+    let traversal = client
+        .traverse_fwd(start_height, start_txhash, move |tx: &Transaction| {
+            log::debug!("traversing {:?}", tx);
+            tx.outputs.iter().position(|coin_data| {
+                (tx.hash_nosigs() == start_txhash && coin_data.denom == Denom::NewCustom)
+                    || coin_data.denom == Denom::Custom(start_txhash)
+            })
+        })
+        .expect("failed to traverse forward")
+        .collect::<Vec<Transaction>>()
+        .await;
+
+    println!("{:?}", traversal);
+
+    let mut ret = vec![];
+
+    let snap = client.snapshot(start_height).await?;
+    let tx = snap
+        .get_transaction(start_txhash)
+        .await?
+        .context("No transaction with given hash")?;
+    let coin = tx
+        .outputs
+        .iter()
+        .find(|coin| coin.denom == Denom::NewCustom);
+
+    match coin {
+        Some(coin_data) => ret.push(coin_data.clone()),
+        None => anyhow::bail!("No valid gibbercoins found"),
+    }
+
+    let lala: anyhow::Result<Vec<CoinData>> = traversal
+        .iter()
+        .map(|tx| {
+            if let Some(coin_data) = tx.outputs.iter().find(|coin_data| {
+                coin_data.denom == Denom::Custom(start_txhash)
+                    || coin_data.denom == Denom::NewCustom
+            }) {
+                Ok(coin_data.clone())
+            } else {
+                anyhow::bail!("OH NO! catena chain BROKE in the middle!")
+            }
+        })
+        .collect();
+    ret.extend(lala?);
+
+    Ok(ret)
+}
+
 /// Returns the data bound to the given gibbername if there is any.
 pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Result<String> {
     let (start_height, start_txhash) = get_and_validate_start_tx(client, gibbername).await?;
@@ -111,6 +166,21 @@ pub async fn lookup(client: &melprot::Client, gibbername: &str) -> anyhow::Resul
     let binding = String::from_utf8_lossy(&last_coin.additional_data);
 
     Ok(binding.into_owned())
+}
+
+/// Returns all the data ever bound to the given gibbername, if there is any
+pub async fn lookup_whole_history(
+    client: &melprot::Client,
+    gibbername: &str,
+) -> anyhow::Result<Vec<String>> {
+    let (start_height, start_txhash) = get_and_validate_start_tx(client, gibbername).await?;
+    log::debug!("start_height: {start_height}, start_txhash: {start_txhash}");
+    let all_coins = traverse_catena_chain_whole_history(client, start_height, start_txhash).await?;
+    let bindings: Vec<String> = all_coins
+        .iter()
+        .map(|coin| String::from_utf8_lossy(&coin.additional_data).into_owned())
+        .collect();
+    Ok(bindings)
 }
 
 #[allow(unused)]
@@ -212,7 +282,12 @@ pub async fn transfer_name_cmd(
         .stream_transactions_from(current_height, address)
         .boxed();
     while let Some((transaction, _height)) = stream.next().await {
-        if let Some(_coin) = &transaction.outputs.iter().find(|coin| coin.denom == denom) {
+        if let Some(coin) = &transaction
+            .outputs
+            .iter()
+            .find(|coin| String::from_utf8_lossy(&coin.additional_data) == new_binding)
+        {
+            println!("COIN_DATA: {:?}", coin);
             println!(
                 "Gibbername {} transferred to {} with new binding {}",
                 gibbername, address, new_binding
@@ -233,12 +308,12 @@ mod test {
     fn end2end() -> anyhow::Result<()> {
         let _ = env_logger::try_init();
         smolscale::block_on(async {
-            let client = melprot::Client::autoconnect(NetID::Testnet).await.unwrap();
+            let client = melprot::Client::autoconnect(NetID::Mainnet).await.unwrap();
             let address =
-                Address::from_str("t1cj51xmq3dxn91z8exz3vhbk2wc8g9enh3kzsbmd3zzy6yx1memyg")
+                Address::from_str("t2k917e3f3r6wk5474sg3exmfpkh04a42w1chmek68fv5pnygywvsg")
                     .unwrap();
             let initial_binding = "henlo world lmao";
-            let wallet_name = "last";
+            let wallet_name = "alice";
 
             let gibbername = register(&client, address, initial_binding, wallet_name)
                 .await
@@ -253,8 +328,16 @@ mod test {
                 .await
                 .unwrap();
 
+            let new_new_binding = "it's actually thursday my dudes";
+            transfer_name_cmd(&client, &gibbername, wallet_name, address, new_new_binding)
+                .await
+                .unwrap();
+
             let final_lookup = lookup(&client, &gibbername).await.unwrap();
             println!("FINAL LOOKUP: {}", final_lookup);
+
+            let whole_history = lookup_whole_history(&client, &gibbername).await.unwrap();
+            println!("WHOLE HISTORY: {:?}", whole_history);
         });
 
         Ok(())
@@ -278,4 +361,7 @@ mod test {
         assert_eq!(height, 216);
         assert_eq!(index, 2);
     }
+
+    #[test]
+    fn make_new_gibbername() {}
 }
