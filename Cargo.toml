@@ -11,9 +11,7 @@ futures-util = "0.3.26"
 gibbercode = "0.1.0"
 hex = "0.4.3"
 log = "0.4.17"
-# melprot = "0.13.4"
-melprot={path="../melprot"}
-# melprot = { git = "https://github.com/mel-project/melprot" }
+melprot = "0.13.4"
 melstructs = "0.3.2"
 stdcode = "0.1.14"
 tmelcrypt = "0.2.7"
