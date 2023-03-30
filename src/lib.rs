@@ -287,7 +287,7 @@ pub async fn transfer_name_cmd(
             .iter()
             .find(|coin| String::from_utf8_lossy(&coin.additional_data) == new_binding)
         {
-            println!("COIN_DATA: {:?}", coin);
+            // println!("COIN_DATA: {:?}", coin);
             println!(
                 "Gibbername {} transferred to {} with new binding {}",
                 gibbername, address, new_binding
