@@ -2,6 +2,8 @@
 name = "gibbername"
 version = "0.1.0"
 edition = "2021"
+license="ISC"
+repository="https://github.com/mel-project/gibbername"
 
 [dependencies]
 anyhow = "1.0.69"
