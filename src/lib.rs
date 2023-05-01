@@ -121,8 +121,6 @@ async fn traverse_catena_chain_whole_history(
         .collect::<Vec<Transaction>>()
         .await;
 
-    println!("{:?}", traversal);
-
     let mut ret = vec![];
 
     let snap = client.snapshot(start_height).await?;
