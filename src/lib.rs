@@ -103,6 +103,17 @@ async fn traverse_catena_chain(
     }
 }
 
+async fn get_owner(
+    client: &melprot::Client,
+    start_height: BlockHeight,
+    start_txhash: TxHash,
+) -> anyhow::Result<Address> {
+    let last_coin = traverse_catena_chain(client, start_height, start_txhash).await?;
+    let owner = last_coin.covhash;
+
+    Ok(owner)
+}
+
 /// Traverses the Catena chain to get the coin containing all the historical bindings.
 async fn traverse_catena_chain_whole_history(
     client: &melprot::Client,
@@ -362,4 +373,24 @@ mod test {
 
     #[test]
     fn make_new_gibbername() {}
+
+    #[test]
+    fn gets_owner() -> anyhow::Result<()> {
+        let _ = env_logger::try_init();
+        smolscale::block_on(async {
+            let client = melprot::Client::autoconnect(NetID::Mainnet).await.unwrap();
+            let gibbername = "jermeb-beg";
+            let (start_height, start_txhash) =
+                get_and_validate_start_tx(&client, gibbername).await?;
+            let start_height = BlockHeight(start_height.try_into()?);
+            let owner = get_owner(&client, start_height, start_txhash).await?;
+
+            assert_eq!(
+                owner.to_string(),
+                "t8bpgw5ppevmyd81h9hxgg744f6g7zeaybpfd89q4sybgdqcjq1bag"
+            );
+
+            Ok(())
+        })
+    }
 }
