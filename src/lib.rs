@@ -207,13 +207,13 @@ fn register_name_uri(address: Address, initial_binding: &str) -> String {
 }
 
 fn register_name_cmd(
-    wallet_name: &str,
+    wallet_path: &str,
     address: Address,
     initial_binding: &str,
 ) -> anyhow::Result<String> {
     let cmd = format!(
-        "melwallet-cli send -w {} --to {},{},{},\"{}\" --hex-data {}",
-        wallet_name,
+        "melwallet-cli --wallet-path {} send --to {},{},{},\"{}\" --hex-data {}",
+        wallet_path,
         address,
         0.000001,
         "\"(NEWCUSTOM)\"",
@@ -228,15 +228,17 @@ pub async fn register(
     client: &melprot::Client,
     address: Address,
     initial_binding: &str,
-    wallet_name: &str,
+    wallet_path: &str,
 ) -> anyhow::Result<String> {
     let height = client.latest_snapshot().await?.current_header().height;
-    let cmd = register_name_cmd(wallet_name, address, initial_binding)?;
+    let cmd = register_name_cmd(wallet_path, address, initial_binding)?;
     println!("Send this command with your wallet: {}", cmd);
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     let mut stream = client.stream_transactions_from(height, address).boxed();
+    println!("got transaction stream");
     while let Some((transaction, height)) = stream.next().await {
+        println!("streaming");
         if &transaction.data[..] == b"gibbername-v1" {
             let txhash = transaction.hash_nosigs();
             let (posn, _) = client
@@ -261,7 +263,7 @@ pub async fn register(
 pub async fn transfer_name_cmd(
     client: &melprot::Client,
     gibbername: &str,
-    wallet_name: &str,
+    wallet_path: &str,
     address: Address,
     new_binding: &str,
 ) -> anyhow::Result<()> {
@@ -276,8 +278,8 @@ pub async fn transfer_name_cmd(
     let denom = Denom::Custom(txhash);
 
     let cmd = format!(
-        "melwallet-cli send -w {} --to {},{},{},{}",
-        wallet_name,
+        "melwallet-cli --wallet-path {} send --to {},{},{},{}",
+        wallet_path,
         address,
         0.000001,
         denom,
@@ -322,9 +324,9 @@ mod test {
                 Address::from_str("t2k917e3f3r6wk5474sg3exmfpkh04a42w1chmek68fv5pnygywvsg")
                     .unwrap();
             let initial_binding = "henlo world lmao";
-            let wallet_name = "alice";
+            let wallet_path = "./alice";
 
-            let gibbername = register(&client, address, initial_binding, wallet_name)
+            let gibbername = register(&client, address, initial_binding, wallet_path)
                 .await
                 .unwrap();
 
@@ -333,12 +335,12 @@ mod test {
             println!("INITIAL BINDING: {}", binding);
 
             let new_binding = "it is wednesday my dudes";
-            transfer_name_cmd(&client, &gibbername, wallet_name, address, new_binding)
+            transfer_name_cmd(&client, &gibbername, wallet_path, address, new_binding)
                 .await
                 .unwrap();
 
             let new_new_binding = "it's actually thursday my dudes";
-            transfer_name_cmd(&client, &gibbername, wallet_name, address, new_new_binding)
+            transfer_name_cmd(&client, &gibbername, wallet_path, address, new_new_binding)
                 .await
                 .unwrap();
 
