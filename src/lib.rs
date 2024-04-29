@@ -236,9 +236,7 @@ pub async fn register(
 
     // scan through all transactions involving this address, starting at the block height right before we asked the user to send the transacton
     let mut stream = client.stream_transactions_from(height, address).boxed();
-    println!("got transaction stream");
     while let Some((transaction, height)) = stream.next().await {
-        println!("streaming");
         if &transaction.data[..] == b"gibbername-v1" {
             let txhash = transaction.hash_nosigs();
             let (posn, _) = client
