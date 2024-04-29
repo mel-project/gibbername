@@ -192,20 +192,7 @@ pub async fn lookup_whole_history(
     Ok(bindings)
 }
 
-#[allow(unused)]
-fn register_name_uri(address: Address, initial_binding: &str) -> String {
-    // melwallet_uri::MwUriBuilder::new()
-    //     .output(0, CoinData {
-    //         denom: NewCoin::Denom,
-    //         value: 1.into(),
-    //         covhash: address,
-    //         additional_data: initial_binding.as_bytes().into(),
-    //     })
-    //     .data(b"gibbername-v1")
-    //     .build()
-    todo!()
-}
-
+// A small helper function to create the wallet command for registering a name.
 fn register_name_cmd(
     wallet_path: &str,
     address: Address,
