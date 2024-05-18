@@ -278,7 +278,7 @@ pub async fn transfer_name_cmd(
         .stream_transactions_from(current_height, address)
         .boxed();
     while let Some((transaction, _height)) = stream.next().await {
-        if let Some(coin) = &transaction
+        if let Some(_) = &transaction
             .outputs
             .iter()
             .find(|coin| String::from_utf8_lossy(&coin.additional_data) == new_binding)
